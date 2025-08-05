@@ -303,17 +303,24 @@ class StandupBuddy {
     }
 
     nextPerson() {
-        if (!this.isStandupActive || this.currentIndex >= this.shuffledMembers.length - 1) {
+        if (!this.isStandupActive) {
             return;
         }
-        
+
         this.currentIndex++;
+
+        if (this.currentIndex >= this.shuffledMembers.length) {
+            this.updateDisplay();
+            this.renderTeamMembers();
+            return;
+        }
+
         // Start timer for next person
         this.startTimer();
-        
+
         this.updateDisplay();
         this.renderTeamMembers();
-        
+
         // Add animation
         this.speakerDisplayEl.classList.add('fade-in');
         setTimeout(() => {
@@ -352,10 +359,7 @@ class StandupBuddy {
             return;
         }
 
-        const remaining = this.shuffledMembers.length - this.currentIndex - 1;
-        const completed = this.currentIndex;
-        
-        if (remaining === 0 && this.currentIndex === this.shuffledMembers.length) {
+        if (this.currentIndex >= this.shuffledMembers.length) {
             // Standup complete state
             resetDisplay();
             this.speakerNameEl.textContent = 'Standup complete! 🎉';
