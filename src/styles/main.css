@@ -305,19 +305,18 @@ main {
 }
 
 .toggle-presence {
-    background: none;
-    border: none;
+    background: #6b7280;
+    border: 1px solid #4b5563;
     padding: 4px 8px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.875rem;
     color: white;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
-.team-member:hover .toggle-presence {
-    opacity: 1;
+.toggle-presence:hover {
+    background: #4b5563;
 }
 
 .next-queue {
