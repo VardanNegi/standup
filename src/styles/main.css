@@ -278,6 +278,12 @@ main {
     align-items: center;
     gap: 8px;
 }
+.member-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    align-items: center;
+}
 .avatar {
     width: 32px;
     height: 32px;
