@@ -332,12 +332,16 @@ class StandupBuddy {
         this.shuffledMembers = [];
         this.currentIndex = 0;
         this.isStandupActive = false;
-        
+
         // Clear timer
         clearInterval(this.timerInterval);
         this.timerDisplayEl.classList.remove('warning');
-        this.timeLeftEl.textContent = '2:00';
-        
+
+        // Reset timer based on current selection
+        this.timeLeft = parseInt(this.timerSelectEl.value);
+        this.updateTimerDisplay();
+        this.updateTimerVisibility();
+
         this.updateDisplay();
         this.renderTeamMembers();
     }
