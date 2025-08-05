@@ -273,6 +273,11 @@ main {
 }
 
 /* Avatars and Member Status */
+.member-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 .avatar {
     width: 32px;
     height: 32px;
@@ -283,7 +288,6 @@ main {
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    margin-right: 10px;
 }
 
 .team-member.absent {
