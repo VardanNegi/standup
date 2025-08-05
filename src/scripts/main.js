@@ -165,7 +165,7 @@ class StandupBuddy {
                 </div>
                 <div class="member-actions">
                     <button class="toggle-presence" onclick="standupBuddy.togglePresence('${member}')">${this.absentMembers.has(member) ? 'Mark Present' : 'Mark Absent'}</button>
-                    <button class="remove-member" onclick="standupBuddy.removeMember('${member}')" title="Remove ${member}">×</button>
+                    <button class="remove-member" onclick="standupBuddy.removeMember('${member}')" aria-label="Remove ${member}" title="Remove ${member}">Remove</button>
                 </div>
             `;
             
