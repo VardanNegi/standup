@@ -165,8 +165,8 @@ class StandupBuddy {
                 </div>
                 <div class="member-actions">
                     <button class="toggle-presence" onclick="standupBuddy.togglePresence('${member}')">${this.absentMembers.has(member) ? 'Mark Present' : 'Mark Absent'}</button>
-                    <button class="remove-member" onclick="standupBuddy.removeMember('${member}')" title="Remove ${member}">×</button>
-                </div>
+                    <button class="remove-member" onclick="if (confirm('Remove member?')) standupBuddy.removeMember('${member}')" title="Remove ${member}">×</button>
+                    </div>
             `;
             
             this.teamListEl.appendChild(memberEl);
