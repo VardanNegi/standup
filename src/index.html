@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Standup Buddy</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>LoopIn</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎯 Standup Buddy</h1>
+            <h1>LoopIn</h1>
             <p>Randomize your team's speaking order</p>
         </header>
 
@@ -25,14 +29,33 @@
 
             <div class="standup-section">
                 <div class="current-speaker">
-                    <h2>Who's up next?</h2>
+                    <h2>Up now</h2>
                     <div class="speaker-display" id="speakerDisplay">
+                        <div class="avatar" id="speakerAvatar">
+                            <span class="initials">?</span>
+                        </div>
                         <span class="speaker-name">Click "Start Standup" to begin!</span>
+                    </div>
+                    <div class="next-queue" id="nextQueue"></div>
+                </div>
+
+                <div class="timer-section">
+                    <div class="timer-controls">
+                        <label>Timer:</label>
+                        <select id="timerSelect">
+                            <option value="0" selected>No timer</option>
+                            <option value="60">60 seconds</option>
+                            <option value="120">120 seconds</option>
+                            <option value="150">150 seconds</option>
+                        </select>
+                        <div class="timer-display" id="timerDisplay">
+                            <span id="timeLeft">2:00</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="progress-info">
-                    <span id="progressText">Ready to start</span>
+                    <span id="progressText">Not started</span>
                 </div>
 
                 <div class="controls">
@@ -44,6 +67,6 @@
         </main>
     </div>
 
-    <script src="script.js"></script>
+    <script src="scripts/main.js"></script>
 </body>
 </html>

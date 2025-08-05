@@ -19,9 +19,4 @@
 3. Use "Next Person" to move through the queue
 4. "Reset Selection" to start over with a new random order
 
-## Future Enhancements (Post-MVP)
-- Local storage for team persistence
-- Timer for each person's turn
-- Standup history and analytics
-- Custom themes and avatars
-- Backend integration and auth
+

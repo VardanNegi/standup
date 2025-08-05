@@ -151,6 +151,10 @@ main {
     padding: 40px 20px;
     margin-bottom: 20px;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
 }
 
 .speaker-display.active {
@@ -163,7 +167,40 @@ main {
     font-size: 2rem;
     font-weight: 700;
     color: #374151;
-    display: block;
+    text-align: center;
+}
+
+.timer-section {
+    margin: 20px 0;
+}
+
+.timer-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.timer-controls select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.timer-display {
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+}
+
+.timer-display.warning {
+    color: #ef4444;
+    font-weight: 800;
 }
 
 .progress-info {
@@ -199,6 +236,9 @@ main {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none !important;
+    background: #e5e7eb !important;
+    color: #9ca3af !important;
+    border-color: #e5e7eb !important;
 }
 
 .btn-primary {
@@ -230,6 +270,64 @@ main {
 .btn-outline:hover:not(:disabled) {
     background: #f3f4f6;
     border-color: #9ca3af;
+}
+
+/* Avatars and Member Status */
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.team-member.absent {
+    opacity: 0.5;
+}
+
+.team-member.absent .avatar {
+    background: #6b7280;
+}
+
+.toggle-presence {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.team-member:hover .toggle-presence {
+    opacity: 1;
+}
+
+.next-queue {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 8px;
+}
+
+/* Confetti Animation */
+@keyframes confetti {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    animation: confetti 1s ease-out forwards;
 }
 
 /* Animations */
