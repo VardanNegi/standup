@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standup Buddy</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Standup Buddy</h1>
+            <p>Randomize your team's speaking order</p>
+        </header>
+
+        <main>
+            <div class="team-section">
+                <h2>Team Members</h2>
+                <div class="team-list" id="teamList"></div>
+                <div class="team-controls">
+                    <input type="text" id="newMemberInput" placeholder="Add team member..." maxlength="30">
+                    <button id="addMemberBtn" class="btn btn-secondary">Add</button>
+                </div>
+            </div>
+
+            <div class="standup-section">
+                <div class="current-speaker">
+                    <h2>Who's up next?</h2>
+                    <div class="speaker-display" id="speakerDisplay">
+                        <span class="speaker-name">Click "Start Standup" to begin!</span>
+                    </div>
+                </div>
+
+                <div class="progress-info">
+                    <span id="progressText">Ready to start</span>
+                </div>
+
+                <div class="controls">
+                    <button id="startBtn" class="btn btn-primary">Start Standup</button>
+                    <button id="nextBtn" class="btn btn-secondary" disabled>Next Person</button>
+                    <button id="resetBtn" class="btn btn-outline">Reset Selection</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
