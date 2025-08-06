@@ -10,7 +10,6 @@
 ## Technical Implementation
 - Pure HTML/CSS/JavaScript (no backend required)
 - Responsive design that works on mobile and desktop
-- Clean, modern UI inspired by standup-buddy.lovable.app
 - Local state management (no persistence between sessions)
 
 ## Usage
