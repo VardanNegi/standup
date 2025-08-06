@@ -60,9 +60,15 @@ class StandupBuddy {
         
         // Handle timer selection changes
         this.timerSelectEl.addEventListener('change', () => {
-            this.timeLeft = parseInt(this.timerSelectEl.value);
+            const newTimerValue = parseInt(this.timerSelectEl.value);
+            this.timeLeft = newTimerValue;
             this.updateTimerDisplay();
             this.updateTimerVisibility();
+            
+            // Start timer immediately if standup is active and timer is enabled
+            if (this.isStandupActive && newTimerValue > 0) {
+                this.startTimer();
+            }
         });
     }
 
@@ -283,6 +289,7 @@ class StandupBuddy {
         if (timerValue > 0) {
             this.startTimer();
         }
+        // Note: If timer is "No timer" initially, it will start when user changes to non-zero value
         
         this.updateDisplay();
         this.renderTeamMembers();
@@ -330,8 +337,9 @@ class StandupBuddy {
         clearInterval(this.timerInterval);
         this.timerDisplayEl.classList.remove('warning');
 
-        // Reset timer based on current selection
-        this.timeLeft = parseInt(this.timerSelectEl.value);
+        // Reset timer dropdown to "No timer"
+        this.timerSelectEl.value = "0";
+        this.timeLeft = 0;
         this.updateTimerDisplay();
         this.updateTimerVisibility();
 

@@ -297,9 +297,9 @@ main {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none !important;
-    background: #e5e7eb !important;
-    color: #9ca3af !important;
-    border-color: #e5e7eb !important;
+    background: #d1d5db !important;
+    color: #6b7280 !important;
+    border-color: #d1d5db !important;
 }
 
 .btn-primary {
@@ -309,7 +309,8 @@ main {
 
 .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.4);
+    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
 }
 
 .btn-secondary {
