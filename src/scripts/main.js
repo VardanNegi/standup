@@ -81,21 +81,14 @@ class StandupBuddy {
         localStorage.setItem('teamMembers', JSON.stringify(this.allMembers));
         this.renderTeamMembers();
         
-        // If standup is not active, we can safely update
-        if (!this.isStandupActive) {
-            this.updateDisplay();
-        }
+        // Update display to show new message if this was the first member
+        this.updateDisplay();
         
         // Reset the Add button state
         this.addMemberBtnEl.disabled = true;
     }
 
     removeMember(name) {
-        if (this.allMembers.length <= 1) {
-            alert('You need at least one team member!');
-            return;
-        }
-        
         this.allMembers = this.allMembers.filter(member => member !== name);
         // Save to localStorage
         localStorage.setItem('teamMembers', JSON.stringify(this.allMembers));
@@ -132,7 +125,7 @@ class StandupBuddy {
         this.teamListEl.innerHTML = '';
         
         if (this.allMembers.length === 0) {
-            this.teamListEl.innerHTML = '<p style="color: #6b7280; font-style: italic;">No team members added yet</p>';
+            this.teamListEl.innerHTML = '<p style="color: #6b7280; font-style: italic;">This space is feeling ghosted 👻 — summon your team!</p>';
             return;
         }
 
@@ -156,16 +149,16 @@ class StandupBuddy {
             }
             
             const initials = this.getInitials(member);
+            const isAbsent = this.absentMembers.has(member);
             memberEl.innerHTML = `
-                <div class="member-info">
+                <div class="member-info" onclick="standupBuddy.togglePresence('${member}')" style="cursor: pointer;">
                     <div class="avatar">
                         <span class="initials">${initials}</span>
                     </div>
-                    <span>${member}</span>
+                    <span class="${isAbsent ? 'absent-name' : ''}">${member}</span>
                 </div>
                 <div class="member-actions">
-                    <button class="toggle-presence" onclick="standupBuddy.togglePresence('${member}')">${this.absentMembers.has(member) ? 'Mark Present' : 'Mark Absent'}</button>
-                    <button class="remove-member" onclick="standupBuddy.removeMember('${member}')" aria-label="Remove ${member}" title="Remove ${member}">Remove</button>
+                    <button class="remove-member" onclick="standupBuddy.removeMember('${member}')" aria-label="Remove ${member}" title="Remove ${member}">×</button>
                 </div>
             `;
             
@@ -270,7 +263,7 @@ class StandupBuddy {
 
     startStandup() {
         if (this.allMembers.length === 0) {
-            alert('Please add some team members first!');
+            alert('Add some teammates first to start a standup!');
             return;
         }
 
@@ -348,10 +341,17 @@ class StandupBuddy {
 
     updateDisplay() {
         const resetDisplay = () => {
-            this.speakerNameEl.textContent = 'Click "Start Standup" to begin!';
-            this.speakerAvatarEl.querySelector('.initials').textContent = '?';
-            this.progressTextEl.textContent = 'Not started';
-            this.startBtnEl.disabled = false;
+            if (this.allMembers.length === 0) {
+                this.speakerNameEl.textContent = 'Add teammates to get going';
+                this.speakerAvatarEl.style.display = 'none';
+                this.startBtnEl.disabled = true;
+            } else {
+                this.speakerNameEl.textContent = 'Squad ready — tap Start to see who\'s first!';
+                this.speakerAvatarEl.style.display = 'flex';
+                this.speakerAvatarEl.querySelector('.initials').textContent = '?';
+                this.startBtnEl.disabled = false;
+            }
+            this.progressTextEl.textContent = '';
             this.startBtnEl.textContent = 'Start Standup';
             this.nextBtnEl.disabled = true;
             this.speakerDisplayEl.classList.remove('active');
@@ -381,10 +381,11 @@ class StandupBuddy {
             // Active standup state
             const currentSpeaker = this.shuffledMembers[this.currentIndex];
             this.speakerNameEl.textContent = currentSpeaker;
+            this.speakerAvatarEl.style.display = 'flex';
             this.speakerAvatarEl.querySelector('.initials').textContent = this.getInitials(currentSpeaker);
             this.speakerDisplayEl.classList.add('active');
             
-            this.progressTextEl.textContent = 'In progress';
+            this.progressTextEl.textContent = '';
             this.startBtnEl.disabled = true;
             this.nextBtnEl.disabled = false;
             this.updateNextQueue();

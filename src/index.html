@@ -18,50 +18,56 @@
         </header>
 
         <main>
-            <div class="team-section">
-                <h2>Team Members</h2>
-                <div class="team-list" id="teamList"></div>
-                <div class="team-controls">
-                    <input type="text" id="newMemberInput" placeholder="Add team member..." maxlength="30">
-                    <button id="addMemberBtn" class="btn btn-secondary">Add</button>
+            <div class="team-section card collapsible" id="teamSection">
+                <div class="card-header">
+                    <h2>Team Members</h2>
+                </div>
+                <div class="card-content">
+                    <div class="team-list" id="teamList"></div>
+                    <div class="team-controls">
+                        <input type="text" id="newMemberInput" placeholder="Add team member..." maxlength="30">
+                        <button id="addMemberBtn" class="btn btn-secondary">Add</button>
+                    </div>
                 </div>
             </div>
 
             <div class="standup-section">
-                <div class="current-speaker">
-                    <h2>Up now</h2>
+                <div class="current-speaker card">
                     <div class="speaker-display" id="speakerDisplay">
-                        <div class="avatar" id="speakerAvatar">
+                        <div class="avatar" id="speakerAvatar" style="display: none;">
                             <span class="initials">?</span>
                         </div>
-                        <span class="speaker-name">Click "Start Standup" to begin!</span>
+                        <span class="speaker-name">Add teammates to get going</span>
                     </div>
                     <div class="next-queue" id="nextQueue"></div>
-                </div>
-
-                <div class="timer-section">
-                    <div class="timer-controls">
-                        <label>Timer:</label>
-                        <select id="timerSelect">
-                            <option value="0" selected>No timer</option>
-                            <option value="60">60 seconds</option>
-                            <option value="120">120 seconds</option>
-                            <option value="150">150 seconds</option>
-                        </select>
-                        <div class="timer-display" id="timerDisplay">
-                            <span id="timeLeft">2:00</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="progress-info">
                     <span id="progressText">Not started</span>
                 </div>
 
-                <div class="controls">
-                    <button id="startBtn" class="btn btn-primary">Start Standup</button>
-                    <button id="nextBtn" class="btn btn-secondary" disabled>Next Person</button>
-                    <button id="resetBtn" class="btn btn-outline">Reset Selection</button>
+                <div class="controls-wrapper">
+                    <div class="controls">
+                        <div class="primary-actions">
+                            <button id="startBtn" class="btn btn-primary">Start Standup</button>
+                        </div>
+                        <div class="secondary-actions">
+                            <button id="nextBtn" class="btn btn-secondary" disabled>Next Person</button>
+                            <button id="resetBtn" class="btn btn-outline">Reset Selection</button>
+                        </div>
+                        <div class="timer-controls">
+                            <label>Timer:</label>
+                            <select id="timerSelect">
+                                <option value="0" selected>No timer</option>
+                                <option value="60">60 seconds</option>
+                                <option value="120">120 seconds</option>
+                                <option value="150">150 seconds</option>
+                            </select>
+                            <div class="timer-display" id="timerDisplay">
+                                <span id="timeLeft">2:00</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
