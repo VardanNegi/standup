@@ -21,7 +21,7 @@ class StandupBuddy {
     initializeElements() {
         this.teamListEl = document.getElementById('teamList');
         this.speakerDisplayEl = document.getElementById('speakerDisplay');
-        this.speakerNameEl = this.speakerDisplayEl.querySelector('.speaker-name');
+        this.speakerNameEl = document.getElementById('speakerName');
         this.speakerAvatarEl = document.getElementById('speakerAvatar');
         this.nextQueueEl = document.getElementById('nextQueue');
         this.progressTextEl = document.getElementById('progressText');
@@ -31,8 +31,6 @@ class StandupBuddy {
         this.newMemberInputEl = document.getElementById('newMemberInput');
         this.addMemberBtnEl = document.getElementById('addMemberBtn');
         this.timerSelectEl = document.getElementById('timerSelect');
-        this.timerDisplayEl = document.getElementById('timerDisplay');
-        this.timeLeftEl = document.getElementById('timeLeft');
         
         // Set initial button state
         this.addMemberBtnEl.disabled = true;
@@ -54,7 +52,13 @@ class StandupBuddy {
         
         this.newMemberInputEl.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && this.newMemberInputEl.value.trim()) {
-                this.addMember();
+                const value = this.newMemberInputEl.value.trim();
+                // Check if input contains commas or newlines (bulk add)
+                if (value.includes(',') || value.includes('\n')) {
+                    this.bulkAdd(value);
+                } else {
+                    this.addMember();
+                }
             }
         });
         
@@ -91,6 +95,40 @@ class StandupBuddy {
         this.updateDisplay();
         
         // Reset the Add button state
+        this.addMemberBtnEl.disabled = true;
+    }
+
+    bulkAdd(value) {
+        const names = value.split(/[,\n]+/).map(v => v.trim()).filter(Boolean);
+        let addedCount = 0;
+        let duplicateCount = 0;
+        
+        names.forEach(name => {
+            if (!this.allMembers.includes(name)) {
+                this.allMembers.push(name);
+                addedCount++;
+            } else {
+                duplicateCount++;
+            }
+        });
+        
+        if (addedCount > 0) {
+            // Save to localStorage
+            localStorage.setItem('teamMembers', JSON.stringify(this.allMembers));
+            this.renderTeamMembers();
+            this.updateDisplay();
+            
+            // Show feedback
+            let message = `Added ${addedCount} team member${addedCount > 1 ? 's' : ''}`;
+            if (duplicateCount > 0) {
+                message += ` (${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} skipped)`;
+            }
+            alert(message);
+        } else if (duplicateCount > 0) {
+            alert('All names are already in the list!');
+        }
+        
+        this.newMemberInputEl.value = '';
         this.addMemberBtnEl.disabled = true;
     }
 
@@ -136,10 +174,10 @@ class StandupBuddy {
         }
 
         this.allMembers.forEach(member => {
-            const memberEl = document.createElement('div');
-            memberEl.className = 'team-member';
+            const chipEl = document.createElement('span');
+            chipEl.className = 'chip';
             if (this.absentMembers.has(member)) {
-                memberEl.classList.add('absent');
+                chipEl.classList.add('absent');
             }
             
             // Add status classes if standup is active
@@ -147,28 +185,39 @@ class StandupBuddy {
                 const memberIndex = this.shuffledMembers.indexOf(member);
                 if (memberIndex !== -1) {
                     if (memberIndex < this.currentIndex) {
-                        memberEl.classList.add('completed');
-                    } else if (memberIndex === this.currentIndex) {
-                        memberEl.classList.add('current');
+                        chipEl.classList.add('completed');
                     }
+                    // Remove current highlighting from chips - only show in "Up now" area
                 }
             }
             
             const initials = this.getInitials(member);
             const isAbsent = this.absentMembers.has(member);
-            memberEl.innerHTML = `
-                <div class="member-info" onclick="standupBuddy.togglePresence('${member}')" style="cursor: pointer;">
-                    <div class="avatar">
-                        <span class="initials">${initials}</span>
-                    </div>
-                    <span class="${isAbsent ? 'absent-name' : ''}">${member}</span>
-                </div>
-                <div class="member-actions">
-                    <button class="remove-member" onclick="standupBuddy.removeMember('${member}')" aria-label="Remove ${member}" title="Remove ${member}">×</button>
-                </div>
+            chipEl.innerHTML = `
+                <span class="initial">${initials}</span>
+                <span style="${isAbsent ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${member}</span>
+                <button class="remove-member" onclick="event.stopPropagation(); standupBuddy.removeMember('${member}')" aria-label="Remove ${member}" title="Remove ${member}" style="background: none; border: none; color: inherit; font-size: 0.75rem; margin-left: 4px; opacity: 0; transition: opacity 0.2s ease; cursor: pointer;">×</button>
             `;
             
-            this.teamListEl.appendChild(memberEl);
+            // Add click handler for presence toggle (but not on remove button)
+            chipEl.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('remove-member') && !e.target.closest('.remove-member')) {
+                    this.togglePresence(member);
+                }
+            });
+            
+            // Show remove button on hover
+            chipEl.addEventListener('mouseenter', () => {
+                const removeBtn = chipEl.querySelector('.remove-member');
+                if (removeBtn) removeBtn.style.opacity = '1';
+            });
+            
+            chipEl.addEventListener('mouseleave', () => {
+                const removeBtn = chipEl.querySelector('.remove-member');
+                if (removeBtn) removeBtn.style.opacity = '0';
+            });
+            
+            this.teamListEl.appendChild(chipEl);
         });
     }
 
@@ -186,23 +235,19 @@ class StandupBuddy {
         const timerValue = parseInt(this.timerSelectEl.value);
         
         if (timerValue === 0) {
-            this.timerDisplayEl.style.display = 'none';
+            // Hide ring timer
+            const ringEl = document.getElementById('ring');
+            if (ringEl) ringEl.style.display = 'none';
             return;
         }
         
         this.timeLeft = timerValue;
-        this.timerDisplayEl.classList.remove('warning');
-        this.timerDisplayEl.style.display = 'block';
-        this.updateTimerDisplay();
+        this.updateTimerColors();
         
         this.timerInterval = setInterval(() => {
             if (this.timeLeft > 0) {
                 this.timeLeft--;
-                this.updateTimerDisplay();
-                
-                if (this.timeLeft <= 10) {
-                    this.timerDisplayEl.classList.add('warning');
-                }
+                this.updateTimerColors();
                 
                 if (this.timeLeft === 0) {
                     clearInterval(this.timerInterval);
@@ -213,14 +258,27 @@ class StandupBuddy {
         }, 1000);
     }
     
-    updateTimerDisplay() {
-        const minutes = Math.floor(this.timeLeft / 60);
-        const seconds = this.timeLeft % 60;
-        this.timeLeftEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    updateTimerColors() {
+        // Update ring timer if timer is active
+        if (this.isStandupActive && this.timeLeft > 0) {
+            this.updateRing(this.timeLeft, parseInt(this.timerSelectEl.value));
+        }
+    }
+
+    updateRing(left, total) {
+        const ringEl = document.getElementById('ring');
+        const ringTxtEl = document.getElementById('ringTxt');
+        
+        if (ringEl && ringTxtEl) {
+            ringEl.style.setProperty('--p', 1 - left / total);
+            ringTxtEl.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+            ringEl.dataset.state = left <= 3 ? 'alert' : left <= 10 ? 'warn' : '';
+            ringEl.style.display = 'grid';
+        }
     }
 
     createConfetti() {
-        const colors = ['#4f46e5', '#7c3aed', '#10b981', '#f59e0b'];
+        const colors = ['#5B7695', '#B4C5D9', '#D9CAB3', '#EFF2F7'];
         for (let i = 0; i < 50; i++) {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
@@ -233,8 +291,7 @@ class StandupBuddy {
     }
 
     updateTimerVisibility() {
-        const timerValue = parseInt(this.timerSelectEl.value);
-        this.timerDisplayEl.style.display = timerValue === 0 ? 'none' : 'block';
+        // Timer visibility is now handled by the ring timer only
     }
 
     togglePresence(member) {
@@ -257,11 +314,19 @@ class StandupBuddy {
         
         const nextSpeakers = this.shuffledMembers
             .slice(this.currentIndex + 1)
-            .filter(member => !this.absentMembers.has(member))
-            .slice(0, 3);
+            .filter(member => !this.absentMembers.has(member));
             
         if (nextSpeakers.length > 0) {
-            this.nextQueueEl.textContent = 'Next: ' + nextSpeakers.join(' • ');
+            const displayCount = Math.min(2, nextSpeakers.length);
+            const displaySpeakers = nextSpeakers.slice(0, displayCount);
+            const remainingCount = nextSpeakers.length - displayCount;
+            
+            let queueText = 'Next: ' + displaySpeakers.join(' • ');
+            if (remainingCount > 0) {
+                queueText += ` +${remainingCount}`;
+            }
+            
+            this.nextQueueEl.textContent = queueText;
         } else {
             this.nextQueueEl.textContent = '';
         }
@@ -326,6 +391,9 @@ class StandupBuddy {
         setTimeout(() => {
             this.speakerDisplayEl.classList.remove('fade-in');
         }, 300);
+        
+        // Play Lottie animation for speaker change
+        this.playLottieAnimation();
     }
 
     resetStandup() {
@@ -335,16 +403,62 @@ class StandupBuddy {
 
         // Clear timer
         clearInterval(this.timerInterval);
-        this.timerDisplayEl.classList.remove('warning');
+        
+        // Hide ring timer
+        const ringEl = document.getElementById('ring');
+        if (ringEl) ringEl.style.display = 'none';
 
         // Reset timer dropdown to "No timer"
         this.timerSelectEl.value = "0";
         this.timeLeft = 0;
-        this.updateTimerDisplay();
         this.updateTimerVisibility();
 
         this.updateDisplay();
         this.renderTeamMembers();
+        
+        // Show undo toast
+        this.showToast('Standup reset');
+    }
+
+    showToast(message) {
+        // Remove existing toast if any
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        // Create new toast
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // Remove toast after 3 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 3000);
+    }
+
+    playLottieAnimation() {
+        const lottieContainer = document.getElementById('lottieContainer');
+        const lottiePlayer = lottieContainer?.querySelector('lottie-player');
+        
+        if (lottieContainer && lottiePlayer) {
+            // Show the container
+            lottieContainer.style.display = 'flex';
+            
+            // Play the animation
+            lottiePlayer.play();
+            
+            // Hide after animation completes (about 2 seconds)
+            setTimeout(() => {
+                lottieContainer.style.display = 'none';
+                // Reset the animation for next time
+                lottiePlayer.stop();
+            }, 2500);
+        }
     }
 
     updateDisplay() {
@@ -355,15 +469,22 @@ class StandupBuddy {
                 this.startBtnEl.disabled = true;
             } else {
                 this.speakerNameEl.textContent = 'Squad ready — tap Start to see who\'s first!';
-                this.speakerAvatarEl.style.display = 'flex';
-                this.speakerAvatarEl.querySelector('.initials').textContent = '?';
+                this.speakerAvatarEl.style.display = 'none';
                 this.startBtnEl.disabled = false;
             }
             this.progressTextEl.textContent = '';
+            this.progressTextEl.parentElement.style.display = 'none';
             this.startBtnEl.textContent = 'Start Standup';
             this.nextBtnEl.disabled = true;
             this.speakerDisplayEl.classList.remove('active');
             this.nextQueueEl.textContent = '';
+            
+            // Reset button states
+            this.startBtnEl.style.display = 'inline-block';
+            this.startBtnEl.classList.remove('btn-secondary');
+            this.startBtnEl.classList.add('btn-primary');
+            this.nextBtnEl.classList.remove('btn-primary');
+            this.nextBtnEl.classList.add('btn-outline-secondary');
         };
 
         if (!this.isStandupActive || this.shuffledMembers.length === 0) {
@@ -374,14 +495,18 @@ class StandupBuddy {
         if (this.currentIndex >= this.shuffledMembers.length) {
             // Standup complete state
             resetDisplay();
-            this.speakerNameEl.textContent = 'Standup complete! 🎉';
+            this.speakerNameEl.textContent = 'Standup complete!';
             this.startBtnEl.textContent = 'Start New Standup';
             this.progressTextEl.textContent = '';
+            this.progressTextEl.parentElement.style.display = 'none';
             
             // Clear timer if it's running
             clearInterval(this.timerInterval);
             this.timeLeft = 0;
             this.updateTimerDisplay();
+            
+            // Show Lottie animation
+            this.playLottieAnimation();
             
             // Show confetti
             this.createConfetti();
@@ -394,8 +519,15 @@ class StandupBuddy {
             this.speakerDisplayEl.classList.add('active');
             
             this.progressTextEl.textContent = '';
+            this.progressTextEl.parentElement.style.display = 'none';
             this.startBtnEl.disabled = true;
             this.nextBtnEl.disabled = false;
+            
+            // Make Next Person the primary button and hide Start button
+            this.startBtnEl.style.display = 'none';
+            this.nextBtnEl.classList.remove('btn-outline-secondary');
+            this.nextBtnEl.classList.add('btn-primary');
+            
             this.updateNextQueue();
         }
     }

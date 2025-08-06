@@ -6,73 +6,91 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>LoopIn</title>
+    <title>LoopIn — Playful Pastel</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="styles/main.css">
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>LoopIn</h1>
-            <p>Randomize your team's speaking order</p>
-        </header>
+    <header class="hero">
+        <h1>LoopIn</h1>
+        <p>Randomize your team's speaking order</p>
+    </header>
 
-        <main>
-            <div class="team-section card collapsible" id="teamSection">
-                <div class="card-header">
-                    <h2>Team Members</h2>
-                </div>
-                <div class="card-content">
-                    <div class="team-list" id="teamList"></div>
-                    <div class="team-controls">
-                        <input type="text" id="newMemberInput" placeholder="Add team member..." maxlength="30">
-                        <button id="addMemberBtn" class="btn btn-secondary">Add</button>
+    <main class="shell">
+        <div class="app-card">
+            <div class="content">
+                <!-- Team members -->
+                <section class="section">
+                    <div class="section-title">Team Members</div>
+                    <div class="team-box">
+                        <div class="chips mb-2" id="teamList">
+                            <!-- Team members will be rendered here -->
+                        </div>
+
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="newMemberInput" placeholder="Add team member or paste comma-separated list..." maxlength="500" />
+                            <button class="btn btn-light" id="addMemberBtn" type="button" disabled>Add</button>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <div class="standup-section">
-                <div class="current-speaker card">
-                    <div class="speaker-display" id="speakerDisplay">
-                        <div class="avatar" id="speakerAvatar" style="display: none;">
+                <!-- Current speaker callout -->
+                <section class="section">
+                    <div class="callout" id="speakerDisplay">
+                        <div class="bubble" id="speakerAvatar" style="display: none;">
                             <span class="initials">?</span>
                         </div>
-                        <span class="speaker-name">Add teammates to get going</span>
+                        <div class="speaker-chip">
+                            <strong id="speakerName">Add teammates to get going</strong>
+                            <div class="timer-ring" id="ring" style="display: none;">
+                                <span id="ringTxt">0:00</span>
+                            </div>
+                            <div class="lottie-container" id="lottieContainer" style="display: none;">
+                                <lottie-player 
+                                    src="https://assets2.lottiefiles.com/packages/lf20_obhph3sh.json" 
+                                    background="transparent" 
+                                    speed="1" 
+                                    style="width: 40px; height: 40px;" 
+                                    loop="false">
+                                </lottie-player>
+                            </div>
+                        </div>
                     </div>
                     <div class="next-queue" id="nextQueue"></div>
-                </div>
+                </section>
 
+                <!-- Progress info -->
                 <div class="progress-info">
                     <span id="progressText">Not started</span>
                 </div>
 
-                <div class="controls-wrapper">
-                    <div class="controls">
-                        <div class="primary-actions">
-                            <button id="startBtn" class="btn btn-primary">Start Standup</button>
-                        </div>
-                        <div class="secondary-actions">
-                            <button id="nextBtn" class="btn btn-secondary" disabled>Next Person</button>
-                            <button id="resetBtn" class="btn btn-outline">Reset Selection</button>
-                        </div>
-                        <div class="timer-controls">
-                            <label>Timer:</label>
-                            <select id="timerSelect">
-                                <option value="0" selected>No timer</option>
-                                <option value="60">60 seconds</option>
-                                <option value="120">120 seconds</option>
-                                <option value="150">150 seconds</option>
-                            </select>
-                            <div class="timer-display" id="timerDisplay">
-                                <span id="timeLeft">2:00</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+                <!-- Controls -->
+                <section class="controls">
+                    <button class="btn btn-primary btn-pill btn-start" id="startBtn">Start Standup</button>
+                    <button class="btn btn-outline-secondary btn-pill" id="nextBtn" disabled>Next Person</button>
+                    <button class="btn btn-light btn-pill" id="resetBtn">Reset Selection</button>
 
+                    <div class="timer-box">
+                        <span class="text-muted fw-semibold">Timer:</span>
+                        <select class="form-select form-select-sm" id="timerSelect">
+                            <option value="0" selected>No timer</option>
+                            <option value="60">60 seconds</option>
+                            <option value="120">120 seconds</option>
+                            <option value="150">150 seconds</option>
+                        </select>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Lottie Player -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>
