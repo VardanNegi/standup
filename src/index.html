@@ -6,91 +6,62 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>LoopIn — Playful Pastel</title>
+    <title>LoopIn — Indigo Hero</title>
     
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="styles/main.css">
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 </head>
 <body>
+    <!-- Hero banner -->
     <header class="hero">
         <h1>LoopIn</h1>
-        <p>Randomize your team's speaking order</p>
+        <p>Organize a randomized speaking flow</p>
     </header>
 
-    <main class="shell">
-        <div class="app-card">
-            <div class="content">
-                <!-- Team members -->
-                <section class="section">
-                    <div class="section-title">Team Members</div>
-                    <div class="team-box">
-                        <div class="chips mb-2" id="teamList">
-                            <!-- Team members will be rendered here -->
-                        </div>
+    <!-- Main card -->
+    <main class="card">
+        <h2>Team Members</h2>
 
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="newMemberInput" placeholder="Add team member or paste comma-separated list..." maxlength="500" />
-                            <button class="btn btn-light" id="addMemberBtn" type="button" disabled>Add</button>
-                        </div>
-                    </div>
-                </section>
+        <div class="members" id="teamList">
+            <!-- Team members will be rendered here -->
+        </div>
 
-                <!-- Current speaker callout -->
-                <section class="section">
-                    <div class="callout" id="speakerDisplay">
-                        <div class="bubble" id="speakerAvatar" style="display: none;">
-                            <span class="initials">?</span>
-                        </div>
-                        <div class="speaker-chip">
-                            <strong id="speakerName">Add teammates to get going</strong>
-                            <div class="timer-ring" id="ring" style="display: none;">
-                                <span id="ringTxt">0:00</span>
-                            </div>
-                            <div class="lottie-container" id="lottieContainer" style="display: none;">
-                                <lottie-player 
-                                    src="https://assets2.lottiefiles.com/packages/lf20_obhph3sh.json" 
-                                    background="transparent" 
-                                    speed="1" 
-                                    style="width: 40px; height: 40px;" 
-                                    loop="false">
-                                </lottie-player>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="next-queue" id="nextQueue"></div>
-                </section>
+        <div class="input-row">
+            <input id="newMemberInput" placeholder="Add team member or paste comma-separated list…" maxlength="500" />
+            <button id="addMemberBtn" disabled>Add</button>
+        </div>
 
-                <!-- Progress info -->
-                <div class="progress-info">
-                    <span id="progressText">Not started</span>
-                </div>
+        <div class="callout" id="speakerDisplay">
+            <strong id="speakerName">Add teammates to get going</strong>
+            <div class="timer-ring" id="ring" style="display: none;">
+                <span id="ringTxt">0:00</span>
+            </div>
+        </div>
 
-                <!-- Controls -->
-                <section class="controls">
-                    <button class="btn btn-primary btn-pill btn-start" id="startBtn">Start Standup</button>
-                    <button class="btn btn-outline-secondary btn-pill" id="nextBtn" disabled>Next Person</button>
-                    <button class="btn btn-light btn-pill" id="resetBtn">Reset Selection</button>
+        <div class="next-queue" id="nextQueue"></div>
 
-                    <div class="timer-box">
-                        <span class="text-muted fw-semibold">Timer:</span>
-                        <select class="form-select form-select-sm" id="timerSelect">
-                            <option value="0" selected>No timer</option>
-                            <option value="60">60 seconds</option>
-                            <option value="120">120 seconds</option>
-                            <option value="150">150 seconds</option>
-                        </select>
-                    </div>
-                </section>
+        <div class="progress-info">
+            <span id="progressText">Not started</span>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Start Standup</button>
+            <button class="btn btn-primary" id="nextBtn" style="display:none;">Next Person</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset Selection</button>
+
+            <div class="timer">
+                <label style="font-weight:700">Timer:</label>
+                <select id="timerSelect">
+                    <option value="0" selected>No timer</option>
+                    <option value="60">60 seconds</option>
+                    <option value="120">120 seconds</option>
+                    <option value="150">150 seconds</option>
+                </select>
             </div>
         </div>
     </main>
 
-    <!-- Bootstrap JS bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Lottie Player -->
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/party-js@latest/bundle/party.min.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@
 ### 👥 **Team Management**
 - **Absence Tracking**: Click member names to toggle presence/absence with strikethrough
 - **Duplicate Prevention**: Prevents adding duplicate team member names with alert
-- **Member Avatars**: Beautiful initials-based avatars for each team member
+
 - **Remove Button**: Clean "×" button for removing members
 
 ### 🎨 **User Experience**
@@ -53,7 +53,7 @@
 
 ### 🎨 **Theming & Customization**
 - Multiple color themes
-- Custom avatar images
+
 - Personalized settings
 - Dark/light mode toggle
 

@@ -12,7 +12,7 @@ A modern, engaging web application for randomizing team speaking order during st
 
 ### 👥 **Team Management**
 - **Dynamic Team Roster**: Add/remove team members on the fly
-- **Member Avatars**: Beautiful initials-based avatars for each team member
+
 - **Absence Tracking**: Click member names to toggle presence/absence with strikethrough
 - **Duplicate Prevention**: Prevents adding duplicate team member names
 - **Empty State Support**: Clean interface when no members are added

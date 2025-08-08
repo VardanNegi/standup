@@ -22,7 +22,6 @@ class StandupBuddy {
         this.teamListEl = document.getElementById('teamList');
         this.speakerDisplayEl = document.getElementById('speakerDisplay');
         this.speakerNameEl = document.getElementById('speakerName');
-        this.speakerAvatarEl = document.getElementById('speakerAvatar');
         this.nextQueueEl = document.getElementById('nextQueue');
         this.progressTextEl = document.getElementById('progressText');
         this.startBtnEl = document.getElementById('startBtn');
@@ -35,7 +34,7 @@ class StandupBuddy {
         // Set initial button state
         this.addMemberBtnEl.disabled = true;
         
-        // Hide timer display initially if "No timer" is selected
+        // Hide timer display initially
         this.updateTimerVisibility();
     }
 
@@ -66,12 +65,19 @@ class StandupBuddy {
         this.timerSelectEl.addEventListener('change', () => {
             const newTimerValue = parseInt(this.timerSelectEl.value);
             this.timeLeft = newTimerValue;
-            this.updateTimerDisplay();
-            this.updateTimerVisibility();
+            
+            // Clear any existing timer interval
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
             
             // Start timer immediately if standup is active and timer is enabled
             if (this.isStandupActive && newTimerValue > 0) {
                 this.startTimer();
+            } else {
+                // Hide timer ring when timer is disabled or standup not active
+                this.updateTimerVisibility();
             }
         });
     }
@@ -81,7 +87,7 @@ class StandupBuddy {
         if (!name) return;
         
         if (this.allMembers.includes(name)) {
-            alert('This team member is already in the list!');
+            this.showToast('This team member is already in the list!');
             return;
         }
         
@@ -96,6 +102,8 @@ class StandupBuddy {
         
         // Reset the Add button state
         this.addMemberBtnEl.disabled = true;
+        
+        this.showToast(`Added ${name} to the team`);
     }
 
     bulkAdd(value) {
@@ -123,9 +131,9 @@ class StandupBuddy {
             if (duplicateCount > 0) {
                 message += ` (${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} skipped)`;
             }
-            alert(message);
+            this.showToast(message);
         } else if (duplicateCount > 0) {
-            alert('All names are already in the list!');
+            this.showToast('All names are already in the list!');
         }
         
         this.newMemberInputEl.value = '';
@@ -134,6 +142,7 @@ class StandupBuddy {
 
     removeMember(name) {
         this.allMembers = this.allMembers.filter(member => member !== name);
+        this.absentMembers.delete(name);
         // Save to localStorage
         localStorage.setItem('teamMembers', JSON.stringify(this.allMembers));
         
@@ -155,21 +164,14 @@ class StandupBuddy {
         
         this.renderTeamMembers();
         this.updateDisplay();
-    }
-
-    getInitials(name) {
-        return name.split(' ')
-            .map(part => part[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2);
+        this.showToast(`Removed ${name} from the team`);
     }
 
     renderTeamMembers() {
         this.teamListEl.innerHTML = '';
         
         if (this.allMembers.length === 0) {
-            this.teamListEl.innerHTML = '<p style="color: #6b7280; font-style: italic;">This space is feeling ghosted 👻 — summon your team!</p>';
+            this.teamListEl.innerHTML = '<p style="color: var(--muted); font-style: italic; text-align: center; margin: 20px 0;">This space is feeling ghosted 👻 — summon your team!</p>';
             return;
         }
 
@@ -186,17 +188,16 @@ class StandupBuddy {
                 if (memberIndex !== -1) {
                     if (memberIndex < this.currentIndex) {
                         chipEl.classList.add('completed');
+                    } else if (memberIndex === this.currentIndex) {
+                        chipEl.classList.add('current-speaker');
                     }
-                    // Remove current highlighting from chips - only show in "Up now" area
                 }
             }
             
-            const initials = this.getInitials(member);
             const isAbsent = this.absentMembers.has(member);
             chipEl.innerHTML = `
-                <span class="initial">${initials}</span>
                 <span style="${isAbsent ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${member}</span>
-                <button class="remove-member" onclick="event.stopPropagation(); standupBuddy.removeMember('${member}')" aria-label="Remove ${member}" title="Remove ${member}" style="background: none; border: none; color: inherit; font-size: 0.75rem; margin-left: 4px; opacity: 0; transition: opacity 0.2s ease; cursor: pointer;">×</button>
+                <button class="remove-member" onclick="event.stopPropagation(); standupBuddy.removeMember('${member}')" aria-label="Remove ${member}" title="Remove ${member}">×</button>
             `;
             
             // Add click handler for presence toggle (but not on remove button)
@@ -235,23 +236,28 @@ class StandupBuddy {
         const timerValue = parseInt(this.timerSelectEl.value);
         
         if (timerValue === 0) {
-            // Hide ring timer
-            const ringEl = document.getElementById('ring');
-            if (ringEl) ringEl.style.display = 'none';
+            this.updateTimerVisibility();
             return;
         }
         
         this.timeLeft = timerValue;
-        this.updateTimerColors();
+        this.updateTimerVisibility();
+        this.updateRing(this.timeLeft, timerValue);
         
         this.timerInterval = setInterval(() => {
             if (this.timeLeft > 0) {
                 this.timeLeft--;
-                this.updateTimerColors();
+                this.updateRing(this.timeLeft, timerValue);
                 
                 if (this.timeLeft === 0) {
                     clearInterval(this.timerInterval);
-                    this.bell.play();
+                    this.timerInterval = null;
+                    // Try to play bell sound
+                    this.bell.play().catch(e => {
+                        console.log('Audio play failed:', e);
+                        // Fallback: show toast instead
+                        this.showToast('Time\'s up!');
+                    });
                     this.nextPerson();
                 }
             }
@@ -262,6 +268,8 @@ class StandupBuddy {
         // Update ring timer if timer is active
         if (this.isStandupActive && this.timeLeft > 0) {
             this.updateRing(this.timeLeft, parseInt(this.timerSelectEl.value));
+        } else {
+            this.updateTimerVisibility();
         }
     }
 
@@ -278,27 +286,98 @@ class StandupBuddy {
     }
 
     createConfetti() {
-        const colors = ['#5B7695', '#B4C5D9', '#D9CAB3', '#EFF2F7'];
-        for (let i = 0; i < 50; i++) {
+        const calloutEl = document.getElementById('speakerDisplay');
+        
+        if (calloutEl && window.party) {
+            try {
+                // Use party-js for confetti effect
+                party.confetti(calloutEl, {
+                    count: party.variation.range(20, 40),
+                    size: party.variation.range(0.6, 1.4),
+                    spread: party.variation.range(15, 35),
+                    angle: party.variation.range(-60, 60),
+                    lifetime: party.variation.range(6, 10),
+                    speed: party.variation.range(200, 400),
+                    colors: ['#4B3CF5', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']
+                });
+            } catch (error) {
+                console.log('Party-js confetti failed:', error);
+                this.createFallbackConfetti();
+            }
+        } else {
+            console.log('Party-js not available, using fallback confetti');
+            this.createFallbackConfetti();
+        }
+    }
+
+    createFallbackConfetti() {
+        const colors = ['#4B3CF5', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+        const calloutEl = document.getElementById('speakerDisplay');
+        const calloutRect = calloutEl ? calloutEl.getBoundingClientRect() : null;
+        
+        for (let i = 0; i < 30; i++) {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
-            confetti.style.left = Math.random() * 100 + 'vw';
-            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.animationDuration = (Math.random() * 1 + 0.5) + 's';
+            
+            // Position confetti around the callout area
+            if (calloutRect) {
+                const startX = calloutRect.left + (Math.random() * calloutRect.width);
+                const startY = calloutRect.top + (Math.random() * calloutRect.height);
+                confetti.style.left = startX + 'px';
+                confetti.style.top = startY + 'px';
+            } else {
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = Math.random() * 100 + 'vh';
+            }
+            
+            // Random properties for variety
+            const size = Math.random() * 8 + 4;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const duration = Math.random() * 2 + 1.5;
+            const delay = Math.random() * 0.5;
+            
+            confetti.style.width = size + 'px';
+            confetti.style.height = size + 'px';
+            confetti.style.background = color;
+            confetti.style.borderRadius = '50%';
+            confetti.style.animationDuration = duration + 's';
+            confetti.style.animationDelay = delay + 's';
+            confetti.style.position = 'absolute';
+            confetti.style.pointerEvents = 'none';
+            confetti.style.zIndex = '1000';
+            
             document.body.appendChild(confetti);
-            setTimeout(() => confetti.remove(), 2000);
+            setTimeout(() => confetti.remove(), (duration + delay) * 1000);
+        }
+    }
+
+    updateTimerDisplay() {
+        // Update timer display and visibility
+        if (this.timeLeft > 0 && this.isStandupActive) {
+            this.updateRing(this.timeLeft, parseInt(this.timerSelectEl.value));
+        } else {
+            this.updateTimerVisibility();
         }
     }
 
     updateTimerVisibility() {
-        // Timer visibility is now handled by the ring timer only
+        const ringEl = document.getElementById('ring');
+        if (ringEl) {
+            if (this.timeLeft > 0 && this.isStandupActive) {
+                ringEl.style.display = 'grid';
+            } else {
+                ringEl.style.display = 'none';
+            }
+        }
     }
 
     togglePresence(member) {
         if (this.absentMembers.has(member)) {
             this.absentMembers.delete(member);
+            this.showToast(`${member} is back!`);
         } else {
             this.absentMembers.add(member);
+            this.showToast(`${member} marked as absent`);
             if (this.isStandupActive && this.shuffledMembers[this.currentIndex] === member) {
                 this.nextPerson();
             }
@@ -334,14 +413,14 @@ class StandupBuddy {
 
     startStandup() {
         if (this.allMembers.length === 0) {
-            alert('Add some teammates first to start a standup!');
+            this.showToast('Add some teammates first to start a standup!');
             return;
         }
 
         // Filter out absent members
         const presentMembers = this.allMembers.filter(member => !this.absentMembers.has(member));
         if (presentMembers.length === 0) {
-            alert('All team members are marked as absent!');
+            this.showToast('All team members are marked as absent!');
             return;
         }
 
@@ -354,16 +433,15 @@ class StandupBuddy {
         if (timerValue > 0) {
             this.startTimer();
         }
-        // Note: If timer is "No timer" initially, it will start when user changes to non-zero value
         
         this.updateDisplay();
         this.renderTeamMembers();
         this.updateNextQueue();
         
         // Add animation to speaker display
-        this.speakerDisplayEl.classList.add('fade-in');
+        this.speakerDisplayEl.classList.add('active');
         setTimeout(() => {
-            this.speakerDisplayEl.classList.remove('fade-in');
+            this.speakerDisplayEl.classList.remove('active');
         }, 300);
     }
 
@@ -387,9 +465,9 @@ class StandupBuddy {
         this.renderTeamMembers();
 
         // Add animation
-        this.speakerDisplayEl.classList.add('fade-in');
+        this.speakerDisplayEl.classList.add('active');
         setTimeout(() => {
-            this.speakerDisplayEl.classList.remove('fade-in');
+            this.speakerDisplayEl.classList.remove('active');
         }, 300);
         
         // Play Lottie animation for speaker change
@@ -403,21 +481,15 @@ class StandupBuddy {
 
         // Clear timer
         clearInterval(this.timerInterval);
-        
-        // Hide ring timer
-        const ringEl = document.getElementById('ring');
-        if (ringEl) ringEl.style.display = 'none';
-
-        // Reset timer dropdown to "No timer"
-        this.timerSelectEl.value = "0";
+        this.timerInterval = null;
         this.timeLeft = 0;
         this.updateTimerVisibility();
 
+        // Reset timer dropdown to "No timer"
+        this.timerSelectEl.value = "0";
+
         this.updateDisplay();
         this.renderTeamMembers();
-        
-        // Show undo toast
-        this.showToast('Standup reset');
     }
 
     showToast(message) {
@@ -441,41 +513,21 @@ class StandupBuddy {
         }, 3000);
     }
 
-    playLottieAnimation() {
-        const lottieContainer = document.getElementById('lottieContainer');
-        const lottiePlayer = lottieContainer?.querySelector('lottie-player');
-        
-        if (lottieContainer && lottiePlayer) {
-            // Show the container
-            lottieContainer.style.display = 'flex';
-            
-            // Play the animation
-            lottiePlayer.play();
-            
-            // Hide after animation completes (about 2 seconds)
-            setTimeout(() => {
-                lottieContainer.style.display = 'none';
-                // Reset the animation for next time
-                lottiePlayer.stop();
-            }, 2500);
-        }
-    }
+
 
     updateDisplay() {
         const resetDisplay = () => {
             if (this.allMembers.length === 0) {
                 this.speakerNameEl.textContent = 'Add teammates to get going';
-                this.speakerAvatarEl.style.display = 'none';
                 this.startBtnEl.disabled = true;
             } else {
                 this.speakerNameEl.textContent = 'Squad ready — tap Start to see who\'s first!';
-                this.speakerAvatarEl.style.display = 'none';
                 this.startBtnEl.disabled = false;
             }
             this.progressTextEl.textContent = '';
             this.progressTextEl.parentElement.style.display = 'none';
             this.startBtnEl.textContent = 'Start Standup';
-            this.nextBtnEl.disabled = true;
+            this.nextBtnEl.style.display = 'none';
             this.speakerDisplayEl.classList.remove('active');
             this.nextQueueEl.textContent = '';
             
@@ -484,7 +536,7 @@ class StandupBuddy {
             this.startBtnEl.classList.remove('btn-secondary');
             this.startBtnEl.classList.add('btn-primary');
             this.nextBtnEl.classList.remove('btn-primary');
-            this.nextBtnEl.classList.add('btn-outline-secondary');
+            this.nextBtnEl.classList.add('btn-secondary');
         };
 
         if (!this.isStandupActive || this.shuffledMembers.length === 0) {
@@ -502,11 +554,9 @@ class StandupBuddy {
             
             // Clear timer if it's running
             clearInterval(this.timerInterval);
+            this.timerInterval = null;
             this.timeLeft = 0;
-            this.updateTimerDisplay();
-            
-            // Show Lottie animation
-            this.playLottieAnimation();
+            this.updateTimerVisibility();
             
             // Show confetti
             this.createConfetti();
@@ -514,8 +564,6 @@ class StandupBuddy {
             // Active standup state
             const currentSpeaker = this.shuffledMembers[this.currentIndex];
             this.speakerNameEl.textContent = currentSpeaker;
-            this.speakerAvatarEl.style.display = 'flex';
-            this.speakerAvatarEl.querySelector('.initials').textContent = this.getInitials(currentSpeaker);
             this.speakerDisplayEl.classList.add('active');
             
             this.progressTextEl.textContent = '';
@@ -525,7 +573,8 @@ class StandupBuddy {
             
             // Make Next Person the primary button and hide Start button
             this.startBtnEl.style.display = 'none';
-            this.nextBtnEl.classList.remove('btn-outline-secondary');
+            this.nextBtnEl.style.display = 'inline-block';
+            this.nextBtnEl.classList.remove('btn-secondary');
             this.nextBtnEl.classList.add('btn-primary');
             
             this.updateNextQueue();
@@ -535,5 +584,15 @@ class StandupBuddy {
 
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.standupBuddy = new StandupBuddy();
+    try {
+        window.standupBuddy = new StandupBuddy();
+        console.log('LoopIn app initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize LoopIn app:', error);
+        // Show user-friendly error message
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; z-index: 10000; border: 1px solid #f5c6cb;';
+        errorDiv.textContent = 'Failed to load the application. Please refresh the page.';
+        document.body.appendChild(errorDiv);
+    }
 });
