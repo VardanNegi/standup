@@ -22,7 +22,6 @@ class StandupBuddy {
         this.teamListEl = document.getElementById('teamList');
         this.speakerDisplayEl = document.getElementById('speakerDisplay');
         this.speakerNameEl = document.getElementById('speakerName');
-        this.nextQueueEl = document.getElementById('nextQueue');
         this.progressTextEl = document.getElementById('progressText');
         this.startBtnEl = document.getElementById('startBtn');
         this.nextBtnEl = document.getElementById('nextBtn');
@@ -385,31 +384,7 @@ class StandupBuddy {
         this.renderTeamMembers();
     }
 
-    updateNextQueue() {
-        if (!this.isStandupActive || this.currentIndex >= this.shuffledMembers.length - 1) {
-            this.nextQueueEl.textContent = '';
-            return;
-        }
-        
-        const nextSpeakers = this.shuffledMembers
-            .slice(this.currentIndex + 1)
-            .filter(member => !this.absentMembers.has(member));
-            
-        if (nextSpeakers.length > 0) {
-            const displayCount = Math.min(2, nextSpeakers.length);
-            const displaySpeakers = nextSpeakers.slice(0, displayCount);
-            const remainingCount = nextSpeakers.length - displayCount;
-            
-            let queueText = 'Next: ' + displaySpeakers.join(' • ');
-            if (remainingCount > 0) {
-                queueText += ` +${remainingCount}`;
-            }
-            
-            this.nextQueueEl.textContent = queueText;
-        } else {
-            this.nextQueueEl.textContent = '';
-        }
-    }
+
 
     startStandup() {
         if (this.allMembers.length === 0) {
@@ -436,7 +411,6 @@ class StandupBuddy {
         
         this.updateDisplay();
         this.renderTeamMembers();
-        this.updateNextQueue();
         
         // Add animation to speaker display
         this.speakerDisplayEl.classList.add('active');
@@ -469,9 +443,6 @@ class StandupBuddy {
         setTimeout(() => {
             this.speakerDisplayEl.classList.remove('active');
         }, 300);
-        
-        // Play Lottie animation for speaker change
-        this.playLottieAnimation();
     }
 
     resetStandup() {
@@ -529,7 +500,6 @@ class StandupBuddy {
             this.startBtnEl.textContent = 'Start Standup';
             this.nextBtnEl.style.display = 'none';
             this.speakerDisplayEl.classList.remove('active');
-            this.nextQueueEl.textContent = '';
             
             // Reset button states
             this.startBtnEl.style.display = 'inline-block';
@@ -563,7 +533,15 @@ class StandupBuddy {
         } else {
             // Active standup state
             const currentSpeaker = this.shuffledMembers[this.currentIndex];
-            this.speakerNameEl.textContent = currentSpeaker;
+            
+            // Get next speaker info
+            let nextSpeakerText = '';
+            if (this.currentIndex < this.shuffledMembers.length - 1) {
+                const nextSpeaker = this.shuffledMembers[this.currentIndex + 1];
+                nextSpeakerText = `, next up ${nextSpeaker}`;
+            }
+            
+            this.speakerNameEl.textContent = `Now speaking: ${currentSpeaker}${nextSpeakerText}`;
             this.speakerDisplayEl.classList.add('active');
             
             this.progressTextEl.textContent = '';
@@ -576,8 +554,6 @@ class StandupBuddy {
             this.nextBtnEl.style.display = 'inline-block';
             this.nextBtnEl.classList.remove('btn-secondary');
             this.nextBtnEl.classList.add('btn-primary');
-            
-            this.updateNextQueue();
         }
     }
 }

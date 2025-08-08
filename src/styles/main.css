@@ -282,12 +282,7 @@ h2{ font-size: 22px; font-weight: 800; }
   font-family: inherit;
 }
 
-.next-queue {
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--muted);
-  font-weight: 600;
-}
+
 
 .progress-info {
   text-align: center;
